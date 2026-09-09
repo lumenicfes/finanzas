@@ -20,7 +20,7 @@ export const storage = {
     const v = typeof value === 'string' ? value : JSON.stringify(value)
     const { error } = await supabase
       .from('lumen_storage')
-      .upsert({ key, value: v }, { onConflict: 'key' })
+      .upsert({ key, value: v }, { onConflict: 'key' }).select
     if (error) return null
     return { key, value: v, shared: _shared }
   },
