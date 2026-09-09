@@ -11,8 +11,9 @@ export const storage = {
       .from('lumen_storage')
       .select('value')
       .eq('key', key)
-      .single()
-    if (error || !data) throw new Error('Not found: ' + key)
+      .maybeSingle()
+    if (error) throw new Error(error.message)
+    if (!data) throw new Error('Not found: ' + key)
     return { key, value: data.value, shared: _shared }
   },
 
@@ -21,7 +22,10 @@ export const storage = {
     const { error } = await supabase
       .from('lumen_storage')
       .upsert({ key, value: v }, { onConflict: 'key' })
-    if (error) return null
+    if (error) {
+      console.error('Supabase error al guardar:', error.message)
+      return null
+    }
     return { key, value: v, shared: _shared }
   },
 
