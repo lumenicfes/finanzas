@@ -265,7 +265,7 @@ function StudentDetailContent({ s, onToggleCuota, onUpdateNotes, onUpdateReceipt
   const [tab,setTab]=useState('cuotas'); const [notes,setNotes]=useState(s.notes||''); const [receipts,setReceipts]=useState(null); const [uploading,setUploading]=useState(false); const fileRef=useRef();
   const cuotas=getCuotas(s);
   useEffect(()=>{if(tab==='comprobantes')loadRec();},[tab]);
-  async function loadRec(){if(receipts!==null)return;try{const r=await window.storage.get(RP+s.id,true);setReceipts(r?JSON.parse(r.value):[]);}catch{setReceipts([]);}}
+  async function loadRec(){if(receipts!==null)return;try{const r=await storage.get(RP+s.id,true);setReceipts(r?JSON.parse(r.value):[]);}catch{setReceipts([]);}}
   function saveNotes(){onUpdateNotes(s.id,notes);}
   async function handleUpload(e){const files=Array.from(e.target.files);if(!files.length)return;setUploading(true);const cur=receipts||[],added=[];for(const file of files){const data=file.type.startsWith('image/')?await compressImg(file):await fileToB64(file);added.push({id:uid(),name:file.name,type:file.type,data,uploadedAt:todayS()+' '+nowT()});}const updated=[...cur,...added];setReceipts(updated);onUpdateReceipts(s.id,updated);setUploading(false);e.target.value='';}
   function delRec(id){const up=(receipts||[]).filter(r=>r.id!==id);setReceipts(up);onUpdateReceipts(s.id,up);}
@@ -561,14 +561,14 @@ export default function App() {
 
   useEffect(()=>{
     (async()=>{
-      try{const r=await window.storage.get(SK,true);if(r?.value){const l=JSON.parse(r.value);setData({...emptyData,...l,groups:l.groups||emptyData.groups,incomeCategories:l.incomeCategories||emptyData.incomeCategories,expenseCategories:l.expenseCategories||emptyData.expenseCategories});}}catch{}
-      try{const r=await window.storage.get(PK,true);if(r?.value)setPin(r.value);}catch{}
+      try{const r=await storage.get(SK,true);if(r?.value){const l=JSON.parse(r.value);setData({...emptyData,...l,groups:l.groups||emptyData.groups,incomeCategories:l.incomeCategories||emptyData.incomeCategories,expenseCategories:l.expenseCategories||emptyData.expenseCategories});}}catch{}
+      try{const r=await storage.get(PK,true);if(r?.value)setPin(r.value);}catch{}
       setLoading(false);
     })();
   },[]);
 
-  async function persist(d){setData(d);try{await window.storage.set(SK,JSON.stringify(d),true);}catch{}}
-  async function changePin(p){setPin(p);try{await window.storage.set(PK,p,true);}catch{}}
+  async function persist(d){setData(d);try{await storage.set(SK,JSON.stringify(d),true);}catch{}}
+  async function changePin(p){setPin(p);try{await storage.set(PK,p,true);}catch{}}
 
   const isAdmin=user==='ana';
   const addPayment=p=>persist({...data,payments:[...data.payments,p]});
@@ -583,7 +583,7 @@ export default function App() {
   const updateIncCats=c=>persist({...data,incomeCategories:c});
   const updateExpCats=c=>persist({...data,expenseCategories:c});
   const updateNotes=(id,notes)=>persist({...data,students:data.students.map(s=>s.id===id?{...s,notes}:s)});
-  async function updateReceipts(sid,recs){try{await window.storage.set(RP+sid,JSON.stringify(recs),true);}catch{}const m=recs.map(({id,name,type,uploadedAt})=>({id,name,type,uploadedAt}));persist({...data,students:data.students.map(s=>s.id===sid?{...s,receipts:m}:s)});}
+  async function updateReceipts(sid,recs){try{await storage.set(RP+sid,JSON.stringify(recs),true);}catch{}const m=recs.map(({id,name,type,uploadedAt})=>({id,name,type,uploadedAt}));persist({...data,students:data.students.map(s=>s.id===sid?{...s,receipts:m}:s)});}
 
   function toggleCuota(sid,key){
     let payments=[...data.payments];
